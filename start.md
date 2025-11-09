@@ -1,0 +1,1 @@
+We are creating an AI Social Media Manager. The User will add their API keys or user and password of different social media accounts and this tool will publish, reply, summarize, interactions, think like or https://socialbu.com/ but selfhosted and connected with AI so we can create and automate our social media accounts. 
