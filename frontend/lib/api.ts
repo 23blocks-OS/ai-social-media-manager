@@ -113,3 +113,26 @@ export const brandProfilesApi = {
   activate: (id: string) => api.patch(`/brand-profiles/${id}/activate`),
   delete: (id: string) => api.delete(`/brand-profiles/${id}`),
 }
+
+// Subscriptions API
+export const subscriptionsApi = {
+  getPlans: () => api.get('/subscriptions/plans'),
+  getCurrent: () => api.get('/subscriptions/current'),
+  getUsage: () => api.get('/subscriptions/usage'),
+  createCheckout: (planId: string, successUrl: string, cancelUrl: string) =>
+    api.post('/subscriptions/checkout', { planId, successUrl, cancelUrl }),
+  createBillingPortal: (returnUrl: string) =>
+    api.post('/subscriptions/billing-portal', { returnUrl }),
+  cancelSubscription: (id: string) => api.post(`/subscriptions/${id}/cancel`),
+  reactivateSubscription: (id: string) => api.post(`/subscriptions/${id}/reactivate`),
+  updatePlan: (id: string, newPlanId: string) =>
+    api.patch(`/subscriptions/${id}/plan`, { newPlanId }),
+
+  // Admin endpoints
+  admin: {
+    getAllSubscriptions: (page = 1, limit = 50) =>
+      api.get('/subscriptions/admin/all', { params: { page, limit } }),
+    createPlan: (data: any) => api.post('/subscriptions/admin/plans', data),
+    getAnalytics: () => api.get('/subscriptions/admin/analytics'),
+  },
+}

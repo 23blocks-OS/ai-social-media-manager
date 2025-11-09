@@ -15,7 +15,8 @@ import {
   Users,
   FileText,
   LogOut,
-  Sparkles
+  Sparkles,
+  CreditCard
 } from 'lucide-react'
 import { useAuthStore } from '@/lib/store'
 
@@ -30,6 +31,7 @@ const navigation = [
   { name: 'AI Assistant', href: '/dashboard/ai-assistant', icon: Bot },
   { name: 'Accounts', href: '/dashboard/accounts', icon: Users },
   { name: 'Reports', href: '/dashboard/reports', icon: FileText },
+  { name: 'Billing', href: '/dashboard/billing', icon: CreditCard },
   { name: 'Settings', href: '/dashboard/settings', icon: Settings },
 ]
 

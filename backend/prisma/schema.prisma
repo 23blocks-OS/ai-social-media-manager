@@ -16,6 +16,13 @@ model User {
   name      String?
   avatar    String?
   role      Role     @default(USER)
+
+  // Subscription fields
+  stripeCustomerId    String?    @unique
+  subscriptionStatus  SubscriptionStatus @default(TRIAL)
+  trialEndsAt         DateTime?
+  onboardingCompleted Boolean    @default(false)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -24,6 +31,8 @@ model User {
   aiConfigs      AIConfig[]
   refreshTokens  RefreshToken[]
   brandProfiles  BrandProfile[]
+  subscriptions  Subscription[]
+  usageMetrics   UsageMetrics[]
 
   @@map("users")
 }
@@ -253,4 +262,149 @@ model BrandProfile {
 
   @@index([userId])
   @@map("brand_profiles")
+}
+
+// SaaS Subscription Models
+
+enum SubscriptionStatus {
+  TRIAL
+  ACTIVE
+  PAST_DUE
+  CANCELED
+  EXPIRED
+}
+
+enum PlanTier {
+  FREE
+  PRO
+  BUSINESS
+}
+
+model SubscriptionPlan {
+  id          String   @id @default(cuid())
+  name        String   // "Free", "Pro", "Business"
+  tier        PlanTier @unique
+  price       Int      // Price in cents (e.g., 2900 = $29.00)
+  interval    String   @default("month") // "month" or "year"
+
+  // Feature Limits
+  maxSocialAccounts Int      @default(1)
+  maxPostsPerMonth  Int      @default(10)
+  maxBrandProfiles  Int      @default(1)
+  maxTeamMembers    Int      @default(1)
+
+  // Feature Flags
+  advancedAI        Boolean  @default(false)
+  analytics         Boolean  @default(false)
+  autoReplies       Boolean  @default(false)
+  customBranding    Boolean  @default(false)
+  apiAccess         Boolean  @default(false)
+  prioritySupport   Boolean  @default(false)
+
+  stripePriceId     String?  @unique
+  isActive          Boolean  @default(true)
+  description       String?  @db.Text
+  features          Json?    // Additional features as JSON
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  subscriptions     Subscription[]
+
+  @@map("subscription_plans")
+}
+
+model Subscription {
+  id                   String   @id @default(cuid())
+  userId               String
+  planId               String
+
+  stripeSubscriptionId String?  @unique
+  stripePriceId        String?
+  stripeProductId      String?
+
+  status               SubscriptionStatus @default(ACTIVE)
+  currentPeriodStart   DateTime
+  currentPeriodEnd     DateTime
+  cancelAtPeriodEnd    Boolean  @default(false)
+  canceledAt           DateTime?
+
+  trialStart           DateTime?
+  trialEnd             DateTime?
+
+  metadata             Json?
+
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  user User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan SubscriptionPlan @relation(fields: [planId], references: [id])
+
+  payments PaymentHistory[]
+
+  @@index([userId])
+  @@index([status])
+  @@map("subscriptions")
+}
+
+model PaymentHistory {
+  id                 String   @id @default(cuid())
+  subscriptionId     String
+
+  stripePaymentId    String   @unique
+  stripeInvoiceId    String?  @unique
+
+  amount             Int      // Amount in cents
+  currency           String   @default("usd")
+  status             String   // "succeeded", "failed", "pending"
+
+  paymentMethod      String?  // "card", "bank_transfer", etc.
+  lastFourDigits     String?
+
+  receiptUrl         String?
+  invoiceUrl         String?
+
+  paidAt             DateTime?
+  failedAt           DateTime?
+
+  metadata           Json?
+
+  createdAt          DateTime @default(now())
+
+  subscription Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+
+  @@index([subscriptionId])
+  @@index([status])
+  @@map("payment_history")
+}
+
+model UsageMetrics {
+  id                String   @id @default(cuid())
+  userId            String
+
+  // Current Month Usage
+  month             String   // Format: "2025-01" for January 2025
+
+  postsCreated      Int      @default(0)
+  postsScheduled    Int      @default(0)
+  postsPublished    Int      @default(0)
+  aiGenerations     Int      @default(0)
+  socialAccountsUsed Int     @default(0)
+
+  // Storage Usage
+  mediaStorageBytes BigInt   @default(0)
+
+  // Last Reset
+  lastReset         DateTime @default(now())
+
+  metadata          Json?
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, month])
+  @@index([userId])
+  @@map("usage_metrics")
 }
