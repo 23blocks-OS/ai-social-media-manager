@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Social Media Manager - Open Source | Self-Hosted Social Media Management</title>
+    <meta name="description" content="Open-source, AI-powered social media management platform. Self-host or build your own SaaS. Manage Twitter, Facebook, Instagram, and LinkedIn with AI.">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-content">
+                <div class="logo">
+                    <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                        <rect width="32" height="32" rx="8" fill="url(#gradient)"/>
+                        <path d="M16 8L20 12L16 16L12 12L16 8Z" fill="white"/>
+                        <path d="M16 16L20 20L16 24L12 20L16 16Z" fill="white" opacity="0.7"/>
+                        <defs>
+                            <linearGradient id="gradient" x1="0" y1="0" x2="32" y2="32">
+                                <stop stop-color="#8B5CF6"/>
+                                <stop offset="1" stop-color="#EC4899"/>
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                    <span>AI Social Manager</span>
+                </div>
+                <div class="nav-links">
+                    <a href="#features">Features</a>
+                    <a href="#tech-stack">Tech Stack</a>
+                    <a href="#docs">Documentation</a>
+                    <a href="https://github.com/yourusername/ai-social-media-manager" target="_blank">GitHub</a>
+                    <a href="../website-saas/index.html" class="btn-secondary">Use as SaaS</a>
+                    <a href="#get-started" class="btn-primary">Get Started</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <div class="badge">Open Source • Self-Hosted • AI-Powered</div>
+                <h1>Build Your Own Social Media Management Platform</h1>
+                <p class="hero-subtitle">
+                    Complete, production-ready codebase for an AI-powered social media manager.
+                    Self-host for personal use or launch your own SaaS business in days.
+                </p>
+                <div class="hero-buttons">
+                    <a href="https://github.com/yourusername/ai-social-media-manager" class="btn-large btn-primary">
+                        <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
+                        </svg>
+                        View on GitHub
+                    </a>
+                    <a href="#get-started" class="btn-large btn-secondary">Quick Start Guide</a>
+                </div>
+                <div class="hero-stats">
+                    <div class="stat">
+                        <div class="stat-value">MIT</div>
+                        <div class="stat-label">License</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value">Full-Stack</div>
+                        <div class="stat-label">TypeScript</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value">Production</div>
+                        <div class="stat-label">Ready</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Use Cases -->
+    <section class="section use-cases">
+        <div class="container">
+            <div class="section-header">
+                <h2>Two Ways to Use</h2>
+                <p>Whether you want to manage your own accounts or build a SaaS business</p>
+            </div>
+            <div class="grid-2">
+                <div class="card highlight">
+                    <div class="card-icon purple">
+                        <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                            <path d="M2 17l10 5 10-5M2 12l10 5 10-5"/>
+                        </svg>
+                    </div>
+                    <h3>Self-Hosted Solution</h3>
+                    <p>Deploy on your own infrastructure for complete control and privacy.</p>
+                    <ul class="feature-list">
+                        <li>✓ Own your data completely</li>
+                        <li>✓ No monthly fees</li>
+                        <li>✓ Customize everything</li>
+                        <li>✓ Deploy anywhere (AWS, GCP, DigitalOcean)</li>
+                        <li>✓ Perfect for personal or business use</li>
+                    </ul>
+                    <a href="#self-hosted" class="card-link">Learn about self-hosting →</a>
+                </div>
+                <div class="card highlight">
+                    <div class="card-icon pink">
+                        <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 2v20M2 12h20"/>
+                            <circle cx="12" cy="12" r="10"/>
+                        </svg>
+                    </div>
+                    <h3>Launch Your Own SaaS</h3>
+                    <p>Everything you need to start a social media SaaS business.</p>
+                    <ul class="feature-list">
+                        <li>✓ Stripe billing built-in</li>
+                        <li>✓ Multi-tenant architecture</li>
+                        <li>✓ Usage tracking & limits</li>
+                        <li>✓ Admin dashboard included</li>
+                        <li>✓ Start generating revenue in days</li>
+                    </ul>
+                    <a href="#saas" class="card-link">SaaS deployment guide →</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features -->
+    <section id="features" class="section features">
+        <div class="container">
+            <div class="section-header">
+                <h2>Packed with Features</h2>
+                <p>Everything you need for professional social media management</p>
+            </div>
+            <div class="grid-3">
+                <div class="feature-card">
+                    <div class="feature-icon">🤖</div>
+                    <h3>AI-Powered Content</h3>
+                    <p>Generate engaging posts with GPT-4 and Claude. AI follows your brand voice and guidelines.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📱</div>
+                    <h3>Multi-Platform</h3>
+                    <p>Manage Twitter, Facebook, Instagram, and LinkedIn from one dashboard.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📅</div>
+                    <h3>Smart Scheduling</h3>
+                    <p>Schedule posts across all platforms with optimal timing suggestions.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <h3>Analytics Dashboard</h3>
+                    <p>Track engagement, reach, and performance with beautiful charts and insights.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">✨</div>
+                    <h3>Brand Center</h3>
+                    <p>Define your brand identity and let AI create on-brand content automatically.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">💳</div>
+                    <h3>Stripe Billing</h3>
+                    <p>Complete subscription system with plans, trials, and payment processing.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">👥</div>
+                    <h3>Team Collaboration</h3>
+                    <p>Multi-user support with role-based access control.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔒</div>
+                    <h3>Secure & Compliant</h3>
+                    <p>OAuth integration, encrypted storage, and GDPR-ready architecture.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📧</div>
+                    <h3>Email Notifications</h3>
+                    <p>Automated emails for subscriptions, payments, and important events.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Tech Stack -->
+    <section id="tech-stack" class="section tech-stack">
+        <div class="container">
+            <div class="section-header">
+                <h2>Modern Tech Stack</h2>
+                <p>Built with industry-leading technologies</p>
+            </div>
+            <div class="tech-grid">
+                <div class="tech-category">
+                    <h3>Backend</h3>
+                    <div class="tech-items">
+                        <div class="tech-item">Node.js + Express</div>
+                        <div class="tech-item">TypeScript</div>
+                        <div class="tech-item">Prisma ORM</div>
+                        <div class="tech-item">PostgreSQL</div>
+                        <div class="tech-item">Redis</div>
+                        <div class="tech-item">JWT Auth</div>
+                    </div>
+                </div>
+                <div class="tech-category">
+                    <h3>Frontend</h3>
+                    <div class="tech-items">
+                        <div class="tech-item">Next.js 14</div>
+                        <div class="tech-item">React 18</div>
+                        <div class="tech-item">TypeScript</div>
+                        <div class="tech-item">Tailwind CSS</div>
+                        <div class="tech-item">React Query</div>
+                        <div class="tech-item">Zustand</div>
+                    </div>
+                </div>
+                <div class="tech-category">
+                    <h3>Infrastructure</h3>
+                    <div class="tech-items">
+                        <div class="tech-item">Terraform</div>
+                        <div class="tech-item">AWS (ECS, RDS, S3)</div>
+                        <div class="tech-item">Docker</div>
+                        <div class="tech-item">GitHub Actions</div>
+                        <div class="tech-item">CloudFront CDN</div>
+                        <div class="tech-item">Auto-Scaling</div>
+                    </div>
+                </div>
+                <div class="tech-category">
+                    <h3>Integrations</h3>
+                    <div class="tech-items">
+                        <div class="tech-item">OpenAI GPT-4</div>
+                        <div class="tech-item">Anthropic Claude</div>
+                        <div class="tech-item">Stripe</div>
+                        <div class="tech-item">Twitter API</div>
+                        <div class="tech-item">Facebook Graph</div>
+                        <div class="tech-item">LinkedIn API</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Get Started -->
+    <section id="get-started" class="section get-started">
+        <div class="container">
+            <div class="section-header">
+                <h2>Get Started in Minutes</h2>
+                <p>Clone, configure, and deploy</p>
+            </div>
+            <div class="steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <h3>Clone the Repository</h3>
+                    <div class="code-block">
+                        <code>git clone https://github.com/yourusername/ai-social-media-manager.git
+cd ai-social-media-manager</code>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <h3>Install Dependencies</h3>
+                    <div class="code-block">
+                        <code>cd backend && npm install
+cd ../frontend && npm install</code>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <h3>Configure Environment</h3>
+                    <div class="code-block">
+                        <code>cp .env.example .env
+# Edit .env with your configuration</code>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <h3>Set Up Database</h3>
+                    <div class="code-block">
+                        <code>npm run prisma:generate
+npm run migrate
+npm run seed</code>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">5</div>
+                    <h3>Start Development</h3>
+                    <div class="code-block">
+                        <code>npm run dev
+# Backend: http://localhost:3001
+# Frontend: http://localhost:3000</code>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Documentation -->
+    <section id="docs" class="section documentation">
+        <div class="container">
+            <div class="section-header">
+                <h2>Comprehensive Documentation</h2>
+                <p>Everything you need to know</p>
+            </div>
+            <div class="grid-2">
+                <div class="doc-card">
+                    <h3>📚 Installation Guide</h3>
+                    <p>Step-by-step setup instructions for development and production</p>
+                    <a href="../docs/installation.md" class="card-link">Read guide →</a>
+                </div>
+                <div class="doc-card">
+                    <h3>🔑 API Keys Setup</h3>
+                    <p>How to get API keys for Twitter, Facebook, Instagram, and LinkedIn</p>
+                    <a href="../docs/api-keys/README.md" class="card-link">View guides →</a>
+                </div>
+                <div class="doc-card">
+                    <h3>🚀 SaaS Deployment</h3>
+                    <p>Complete guide to deploying as a SaaS platform with Stripe billing</p>
+                    <a href="../docs/saas-deployment.md" class="card-link">Deploy SaaS →</a>
+                </div>
+                <div class="doc-card">
+                    <h3>🏠 Self-Hosted Deployment</h3>
+                    <p>Deploy on your own infrastructure with full control</p>
+                    <a href="../docs/self-hosted-deployment.md" class="card-link">Self-host →</a>
+                </div>
+                <div class="doc-card">
+                    <h3>🏗️ Architecture</h3>
+                    <p>Understand the system design and architecture</p>
+                    <a href="../docs/architecture.md" class="card-link">Learn more →</a>
+                </div>
+                <div class="doc-card">
+                    <h3>🔌 API Reference</h3>
+                    <p>Complete API documentation for all endpoints</p>
+                    <a href="../docs/api/README.md" class="card-link">Browse API →</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="cta">
+        <div class="container">
+            <h2>Ready to Get Started?</h2>
+            <p>Join developers building the next generation of social media tools</p>
+            <div class="cta-buttons">
+                <a href="https://github.com/yourusername/ai-social-media-manager" class="btn-large btn-white">
+                    <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
+                    </svg>
+                    Star on GitHub
+                </a>
+                <a href="../docs/README.md" class="btn-large btn-outline">View Documentation</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>AI Social Manager</h4>
+                    <p>Open-source social media management platform</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Resources</h4>
+                    <a href="../docs/README.md">Documentation</a>
+                    <a href="https://github.com/yourusername/ai-social-media-manager">GitHub</a>
+                    <a href="../docs/contributing.md">Contributing</a>
+                    <a href="../docs/faq.md">FAQ</a>
+                </div>
+                <div class="footer-section">
+                    <h4>Community</h4>
+                    <a href="#">Discord</a>
+                    <a href="https://github.com/yourusername/ai-social-media-manager/discussions">Discussions</a>
+                    <a href="https://twitter.com/aisocialmanager">Twitter</a>
+                </div>
+                <div class="footer-section">
+                    <h4>Legal</h4>
+                    <a href="#">MIT License</a>
+                    <a href="#">Privacy Policy</a>
+                    <a href="#">Terms of Service</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 AI Social Media Manager. Open Source under MIT License.</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
