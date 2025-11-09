@@ -14,7 +14,8 @@ import {
   Settings,
   Users,
   FileText,
-  LogOut
+  LogOut,
+  Sparkles
 } from 'lucide-react'
 import { useAuthStore } from '@/lib/store'
 
@@ -23,6 +24,7 @@ const navigation = [
   { name: 'Compose', href: '/dashboard/compose', icon: PenSquare },
   { name: 'Calendar', href: '/dashboard/calendar', icon: Calendar },
   { name: 'Analytics', href: '/dashboard/analytics', icon: BarChart3 },
+  { name: 'Brand Center', href: '/dashboard/brand-center', icon: Sparkles },
   { name: 'Inbox', href: '/dashboard/inbox', icon: Inbox },
   { name: 'Media Library', href: '/dashboard/media', icon: Image },
   { name: 'AI Assistant', href: '/dashboard/ai-assistant', icon: Bot },

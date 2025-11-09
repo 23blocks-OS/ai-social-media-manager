@@ -1,8 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { useQuery, useMutation, useQueryClient } from '@tantml:react-query'
-import { socialAccountsApi, postsApi, aiApi } from '@/lib/api'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { socialAccountsApi, postsApi, aiApi, brandProfilesApi } from '@/lib/api'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
@@ -38,6 +38,7 @@ import {
   X,
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 
 const platformIcons = {
   TWITTER: Twitter,
@@ -74,6 +75,14 @@ export default function ComposePage() {
     },
   })
 
+  const { data: brandProfile } = useQuery({
+    queryKey: ['active-brand-profile'],
+    queryFn: async () => {
+      const res = await brandProfilesApi.getActive()
+      return res.data.data
+    },
+  })
+
   const createPostMutation = useMutation({
     mutationFn: async (data: any) => {
       const res = await postsApi.create(data)
@@ -87,7 +96,24 @@ export default function ComposePage() {
 
   const generateContentMutation = useMutation({
     mutationFn: async (prompt: string) => {
-      const res = await aiApi.generate({ prompt, provider: aiProvider })
+      const brandContext = brandProfile ? {
+        name: brandProfile.name,
+        brandVoice: brandProfile.brandVoice,
+        toneAttributes: brandProfile.toneAttributes,
+        writingStyle: brandProfile.writingStyle,
+        values: brandProfile.values,
+        keywords: brandProfile.keywords,
+        hashtags: brandProfile.hashtags,
+        dosList: brandProfile.dosList,
+        dontsList: brandProfile.dontsList,
+        targetAudience: brandProfile.targetAudience,
+      } : undefined
+
+      const res = await aiApi.generate({
+        prompt,
+        provider: aiProvider,
+        brandContext
+      })
       return res.data.data.content
     },
     onSuccess: (data) => {
@@ -98,7 +124,23 @@ export default function ComposePage() {
 
   const improveContentMutation = useMutation({
     mutationFn: async () => {
-      const res = await aiApi.improve({ content, provider: aiProvider })
+      const brandContext = brandProfile ? {
+        name: brandProfile.name,
+        brandVoice: brandProfile.brandVoice,
+        toneAttributes: brandProfile.toneAttributes,
+        writingStyle: brandProfile.writingStyle,
+        values: brandProfile.values,
+        keywords: brandProfile.keywords,
+        dosList: brandProfile.dosList,
+        dontsList: brandProfile.dontsList,
+        targetAudience: brandProfile.targetAudience,
+      } : undefined
+
+      const res = await aiApi.improve({
+        content,
+        provider: aiProvider,
+        brandContext
+      })
       return res.data.data.content
     },
     onSuccess: (data) => {
@@ -108,7 +150,14 @@ export default function ComposePage() {
 
   const generateHashtagsMutation = useMutation({
     mutationFn: async () => {
-      const res = await aiApi.generateHashtags({ content })
+      const brandContext = brandProfile ? {
+        hashtags: brandProfile.hashtags,
+      } : undefined
+
+      const res = await aiApi.generateHashtags({
+        content,
+        brandContext
+      })
       return res.data.data.hashtags
     },
     onSuccess: (hashtags) => {
@@ -178,10 +227,38 @@ export default function ComposePage() {
     <div className="max-w-4xl mx-auto space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">Create Post</h1>
-        <p className="text-gray-500 mt-1">
-          Compose and schedule posts across your social media accounts
-        </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Create Post</h1>
+            <p className="text-gray-500 mt-1">
+              Compose and schedule posts across your social media accounts
+            </p>
+          </div>
+          {brandProfile && (
+            <Badge variant="default" className="flex items-center">
+              <Sparkles className="mr-1 h-4 w-4" />
+              Using "{brandProfile.name}" brand profile
+            </Badge>
+          )}
+        </div>
+        {!brandProfile && (
+          <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg flex items-start justify-between">
+            <div className="flex items-start">
+              <Sparkles className="h-5 w-5 text-blue-600 mr-2 mt-0.5" />
+              <div>
+                <p className="text-sm font-medium text-blue-900">Create a brand profile for better AI content</p>
+                <p className="text-sm text-blue-700 mt-1">
+                  Define your brand voice, values, and guidelines to generate on-brand content automatically.
+                </p>
+              </div>
+            </div>
+            <Link href="/dashboard/brand-center">
+              <Button variant="outline" size="sm">
+                Create Profile
+              </Button>
+            </Link>
+          </div>
+        )}
       </div>
 
       {/* Account Selection */}

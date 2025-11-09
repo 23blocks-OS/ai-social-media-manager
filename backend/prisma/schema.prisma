@@ -23,6 +23,7 @@ model User {
   posts          Post[]
   aiConfigs      AIConfig[]
   refreshTokens  RefreshToken[]
+  brandProfiles  BrandProfile[]
 
   @@map("users")
 }
@@ -199,4 +200,57 @@ model WebhookLog {
   @@index([platform])
   @@index([processed])
   @@map("webhook_logs")
+}
+
+model BrandProfile {
+  id          String   @id @default(cuid())
+  userId      String
+  name        String
+  tagline     String?
+  description String?  @db.Text
+  isActive    Boolean  @default(true)
+
+  // Brand Voice & Tone
+  brandVoice  String?  @db.Text  // e.g., "professional", "casual", "friendly"
+  toneAttributes Json? // e.g., ["authentic", "innovative", "trustworthy"]
+  writingStyle String? @db.Text // e.g., "concise", "storytelling", "data-driven"
+
+  // Target Audience
+  targetAudience String? @db.Text
+  audienceDemographics Json?
+
+  // Brand Values & Mission
+  mission     String?  @db.Text
+  vision      String?  @db.Text
+  values      String[] // e.g., ["innovation", "sustainability", "customer-first"]
+
+  // Visual Identity
+  primaryColor   String? // Hex color
+  secondaryColor String? // Hex color
+  accentColor    String? // Hex color
+  logoUrl        String?
+  brandAssets    String[] // URLs to uploaded assets
+
+  // Content Guidelines
+  keywords       String[] // Important keywords to include
+  hashtags       String[] // Preferred hashtags
+  dosList        String[] // Things to do
+  dontsList      String[] // Things to avoid
+
+  // Example Content
+  examplePosts   Json? // Array of example posts
+  contentThemes  String[] // e.g., ["product updates", "thought leadership"]
+
+  // Additional Guidelines
+  styleGuideUrl  String? // URL to style guide PDF
+  competitorUrls String[] // Competitor accounts for reference
+  additionalNotes String? @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("brand_profiles")
 }
