@@ -1,16 +1,45 @@
 # AI Social Media Manager
 
-A self-hosted, AI-powered social media management platform for managing multiple social media accounts with intelligent automation.
+> Complete, production-ready AI-powered social media management platform. Self-host or deploy as a SaaS business.
 
-## Features
+[![MIT License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Node.js](https://img.shields.io/badge/Node.js-18+-green.svg)](https://nodejs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue.svg)](https://www.typescriptlang.org/)
+[![Next.js](https://img.shields.io/badge/Next.js-14-black.svg)](https://nextjs.org/)
 
-- 🤖 **AI-Powered Content Generation**: Create engaging posts using OpenAI GPT-4 or Anthropic Claude
-- 📱 **Multi-Platform Support**: Manage Twitter/X, Facebook, Instagram, LinkedIn, and TikTok
-- 📊 **Unified Dashboard**: View all social feeds in one place
-- 🔄 **Smart Automation**: Auto-reply, schedule posts, and engage with your audience
-- 📈 **Analytics & Insights**: Track performance across all platforms
-- 🔐 **Self-Hosted**: Full control over your data and infrastructure
-- ☁️ **AWS Deployment**: Enterprise-grade infrastructure with Terraform
+## ✨ Features
+
+- 🤖 **AI-Powered Content** - Generate engaging posts with GPT-4 and Claude
+- 📱 **Multi-Platform** - Twitter, Facebook, Instagram, LinkedIn support
+- 📅 **Smart Scheduling** - Schedule posts across all platforms
+- 📊 **Analytics Dashboard** - Track performance with beautiful charts
+- ✨ **Brand Center** - Define brand voice and let AI follow it
+- 💳 **Stripe Billing** - Complete subscription system included (SaaS mode)
+- 👥 **Team Collaboration** - Multi-user support
+- 🔒 **Secure** - OAuth integration, encrypted storage
+- 📧 **Email Notifications** - Automated emails for all events
+- 🚀 **Production Ready** - Complete CI/CD, Terraform, Docker
+
+## 🎯 Two Ways to Use
+
+### 1. Self-Hosted
+Deploy on your own infrastructure for complete control:
+- Own your data
+- No monthly fees
+- Customize everything
+- Perfect for personal or business use
+
+[📖 Self-Hosted Deployment Guide](docs/self-hosted-deployment.md)
+
+### 2. SaaS Platform
+Launch your own social media management business:
+- Stripe billing built-in
+- Multi-tenant architecture
+- Usage tracking & limits
+- Admin dashboard
+- Generate revenue in days
+
+[🚀 SaaS Deployment Guide](docs/saas-deployment.md)
 
 ## Architecture
 
@@ -99,18 +128,51 @@ terraform plan
 terraform apply
 ```
 
-## Documentation
+## 📚 Documentation
 
-- [Architecture Overview](./docs/ARCHITECTURE.md)
-- [API Documentation](./docs/API.md)
-- [Social Media Setup Guides](./docs/social-media-setup/README.md)
-  - [Twitter/X Setup](./docs/social-media-setup/TWITTER.md)
-  - [Facebook Setup](./docs/social-media-setup/FACEBOOK.md)
-  - [Instagram Setup](./docs/social-media-setup/INSTAGRAM.md)
-  - [LinkedIn Setup](./docs/social-media-setup/LINKEDIN.md)
-  - [TikTok Setup](./docs/social-media-setup/TIKTOK.md)
-- [AI Configuration](./docs/AI_CONFIGURATION.md)
-- [Deployment Guide](./docs/DEPLOYMENT.md)
+- [Installation Guide](docs/installation.md) - Complete setup instructions
+- [API Keys Setup](docs/api-keys/README.md) - How to get API keys for each platform
+  - [Twitter Setup](docs/api-keys/twitter.md)
+  - [Facebook Setup](docs/api-keys/facebook.md)
+  - [Instagram Setup](docs/api-keys/instagram.md)
+  - [LinkedIn Setup](docs/api-keys/linkedin.md)
+- [SaaS Deployment](docs/saas-deployment.md) - Deploy as a SaaS business
+- [Self-Hosted Deployment](docs/self-hosted-deployment.md) - Self-host guide
+- [Architecture Overview](docs/architecture.md) - System design
+- [API Documentation](docs/api/README.md) - Complete API reference
+- [Contributing Guide](docs/contributing.md) - How to contribute
+
+## 🌐 Marketing Websites
+
+Two ready-to-use marketing websites are included:
+
+### Open Source Website
+Targets developers who want to self-host or build their own SaaS:
+- [website-opensource/index.html](website-opensource/index.html)
+- Features, tech stack, documentation links
+- GitHub integration, community focus
+
+### SaaS Website
+Targets end-users who want to use the platform as a service:
+- [website-saas/index.html](website-saas/index.html)
+- Pricing, testimonials, features
+- Signup and trial focus
+
+## 💰 Pricing (SaaS Model)
+
+The platform includes three subscription tiers:
+
+| Feature | Free | Pro ($29/mo) | Business ($99/mo) |
+|---------|------|--------------|-------------------|
+| Social Accounts | 1 | 5 | Unlimited |
+| Posts/Month | 10 | Unlimited | Unlimited |
+| Brand Profiles | 1 | 3 | Unlimited |
+| AI Features | Basic | Advanced | Advanced |
+| Analytics | ❌ | ✅ | ✅ |
+| Auto-Replies | ❌ | ✅ | ✅ |
+| Team Members | 1 | 1 | 10 |
+| API Access | ❌ | ❌ | ✅ |
+| Priority Support | ❌ | ❌ | ✅ |
 
 ## Tech Stack
 
