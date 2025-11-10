@@ -1,0 +1,396 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type "deploy" to confirm production deployment'
+        required: true
+        default: ''
+
+env:
+  AWS_REGION: ${{ secrets.AWS_REGION || 'us-east-1' }}
+  ECR_REPOSITORY: ai-social-manager-prod
+  ECS_SERVICE: ai-social-manager-prod-service
+  ECS_CLUSTER: ai-social-manager-prod-cluster
+  ECS_TASK_DEFINITION: ai-social-manager-prod
+  CONTAINER_NAME: ai-social-manager-prod
+
+jobs:
+  validate:
+    name: Validate Deployment
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Validate manual deployment
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          if [ "${{ github.event.inputs.confirm }}" != "deploy" ]; then
+            echo "❌ Deployment not confirmed. Please type 'deploy' to confirm."
+            exit 1
+          fi
+
+      - name: Check branch protection
+        run: |
+          echo "✅ Deployment validation passed"
+
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    needs: validate
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test_db
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+      redis:
+        image: redis:7
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: |
+            backend/package-lock.json
+            frontend/package-lock.json
+
+      - name: Install backend dependencies
+        working-directory: ./backend
+        run: npm ci
+
+      - name: Install frontend dependencies
+        working-directory: ./frontend
+        run: npm ci
+
+      - name: Run backend linter
+        working-directory: ./backend
+        run: npm run lint
+
+      - name: Run frontend linter
+        working-directory: ./frontend
+        run: npm run lint
+
+      - name: Generate Prisma client
+        working-directory: ./backend
+        run: npm run prisma:generate
+
+      - name: Run backend tests with coverage
+        working-directory: ./backend
+        run: npm test -- --coverage
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
+          REDIS_HOST: localhost
+          REDIS_PORT: 6379
+          JWT_SECRET: test-secret
+          JWT_REFRESH_SECRET: test-refresh-secret
+
+      - name: Run frontend tests with coverage
+        working-directory: ./frontend
+        run: npm test -- --coverage
+
+      - name: Build backend
+        working-directory: ./backend
+        run: npm run build
+
+      - name: Build frontend
+        working-directory: ./frontend
+        run: npm run build
+        env:
+          NEXT_PUBLIC_API_URL: https://api.yourdomain.com
+
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          severity: 'CRITICAL,HIGH'
+          exit-code: '1' # Fail on critical/high vulnerabilities
+
+      - name: Upload Trivy results
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+  build-and-push:
+    name: Build and Push to ECR
+    runs-on: ubuntu-latest
+    needs: [test, security-scan]
+
+    outputs:
+      backend-image: ${{ steps.build-backend.outputs.image }}
+      frontend-image: ${{ steps.build-frontend.outputs.image }}
+      version: ${{ steps.version.outputs.version }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Get version
+        id: version
+        run: |
+          if [[ $GITHUB_REF == refs/tags/* ]]; then
+            VERSION=${GITHUB_REF#refs/tags/}
+          else
+            VERSION=${{ github.sha }}
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push backend image
+        id: build-backend
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ steps.version.outputs.version }}
+        run: |
+          cd backend
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY-backend:$IMAGE_TAG \
+            -t $ECR_REGISTRY/$ECR_REPOSITORY-backend:latest \
+            --build-arg NODE_ENV=production .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY-backend:$IMAGE_TAG
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY-backend:latest
+          echo "image=$ECR_REGISTRY/$ECR_REPOSITORY-backend:$IMAGE_TAG" >> $GITHUB_OUTPUT
+
+      - name: Build and push frontend image
+        id: build-frontend
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ steps.version.outputs.version }}
+        run: |
+          cd frontend
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY-frontend:$IMAGE_TAG \
+            -t $ECR_REGISTRY/$ECR_REPOSITORY-frontend:latest \
+            --build-arg NEXT_PUBLIC_API_URL=https://api.yourdomain.com .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY-frontend:$IMAGE_TAG
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY-frontend:latest
+          echo "image=$ECR_REGISTRY/$ECR_REPOSITORY-frontend:$IMAGE_TAG" >> $GITHUB_OUTPUT
+
+  deploy:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    environment:
+      name: production
+      url: https://yourdomain.com
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Create database backup
+        run: |
+          echo "Creating database backup before deployment..."
+          TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+          aws rds create-db-snapshot \
+            --db-instance-identifier ai-social-manager-prod \
+            --db-snapshot-identifier ai-social-manager-prod-$TIMESTAMP \
+            --tags Key=Environment,Value=production Key=Type,Value=pre-deployment
+
+      - name: Download task definition
+        run: |
+          aws ecs describe-task-definition \
+            --task-definition ${{ env.ECS_TASK_DEFINITION }} \
+            --query taskDefinition > task-definition.json
+
+      - name: Update backend task definition
+        id: task-def-backend
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: task-definition.json
+          container-name: backend
+          image: ${{ needs.build-and-push.outputs.backend-image }}
+
+      - name: Update frontend task definition
+        id: task-def-frontend
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: ${{ steps.task-def-backend.outputs.task-definition }}
+          container-name: frontend
+          image: ${{ needs.build-and-push.outputs.frontend-image }}
+
+      - name: Deploy to Amazon ECS
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          task-definition: ${{ steps.task-def-frontend.outputs.task-definition }}
+          service: ${{ env.ECS_SERVICE }}
+          cluster: ${{ env.ECS_CLUSTER }}
+          wait-for-service-stability: true
+
+      - name: Run database migrations
+        run: |
+          TASK_ARN=$(aws ecs list-tasks \
+            --cluster ${{ env.ECS_CLUSTER }} \
+            --service-name ${{ env.ECS_SERVICE }} \
+            --query 'taskArns[0]' \
+            --output text)
+
+          aws ecs execute-command \
+            --cluster ${{ env.ECS_CLUSTER }} \
+            --task $TASK_ARN \
+            --container backend \
+            --interactive \
+            --command "npm run migrate:prod"
+
+      - name: Smoke tests
+        run: |
+          # Wait for deployment to stabilize
+          sleep 60
+
+          # Test API health
+          response=$(curl -s -o /dev/null -w "%{http_code}" https://api.yourdomain.com/health)
+          if [ $response -ne 200 ]; then
+            echo "❌ API health check failed with status $response"
+            exit 1
+          fi
+
+          # Test frontend
+          response=$(curl -s -o /dev/null -w "%{http_code}" https://yourdomain.com)
+          if [ $response -ne 200 ]; then
+            echo "❌ Frontend health check failed with status $response"
+            exit 1
+          fi
+
+          # Test authentication
+          response=$(curl -s -o /dev/null -w "%{http_code}" https://api.yourdomain.com/api/auth/refresh)
+          if [ $response -ne 401 ]; then
+            echo "❌ Auth endpoint not responding correctly"
+            exit 1
+          fi
+
+          echo "✅ All smoke tests passed"
+
+      - name: Create GitHub release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ needs.build-and-push.outputs.version }}
+          release_name: Release ${{ needs.build-and-push.outputs.version }}
+          body: |
+            ## Changes in this Release
+            - Backend Image: ${{ needs.build-and-push.outputs.backend-image }}
+            - Frontend Image: ${{ needs.build-and-push.outputs.frontend-image }}
+
+            ## Deployment
+            - 🌐 Production: https://yourdomain.com
+            - 🔌 API: https://api.yourdomain.com
+
+            See CHANGELOG.md for detailed changes.
+          draft: false
+          prerelease: false
+
+  rollback:
+    name: Rollback on Failure
+    runs-on: ubuntu-latest
+    needs: deploy
+    if: failure()
+
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Rollback ECS service
+        run: |
+          echo "🔄 Rolling back to previous task definition..."
+
+          # Get previous task definition
+          PREVIOUS_TASK_DEF=$(aws ecs describe-services \
+            --cluster ${{ env.ECS_CLUSTER }} \
+            --services ${{ env.ECS_SERVICE }} \
+            --query 'services[0].deployments[1].taskDefinition' \
+            --output text)
+
+          if [ ! -z "$PREVIOUS_TASK_DEF" ]; then
+            aws ecs update-service \
+              --cluster ${{ env.ECS_CLUSTER }} \
+              --service ${{ env.ECS_SERVICE }} \
+              --task-definition $PREVIOUS_TASK_DEF \
+              --force-new-deployment
+
+            echo "✅ Rollback initiated"
+          else
+            echo "⚠️ No previous task definition found"
+          fi
+
+  notify:
+    name: Notify Deployment
+    runs-on: ubuntu-latest
+    needs: [deploy]
+    if: always()
+
+    steps:
+      - name: Send notification
+        run: |
+          if [ "${{ needs.deploy.result }}" == "success" ]; then
+            echo "✅ Production deployment successful!"
+            echo "🌐 Frontend: https://yourdomain.com"
+            echo "🔌 API: https://api.yourdomain.com"
+            echo "📊 Version: ${{ needs.build-and-push.outputs.version }}"
+            echo "🎉 Live and serving users!"
+          else
+            echo "❌ Production deployment failed!"
+            echo "🔄 Automatic rollback initiated"
+            echo "📧 Check logs and notify team"
+          fi

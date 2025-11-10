@@ -23,9 +23,42 @@ All major features are implemented:
 - ✅ Admin dashboard for SaaS operators
 - ✅ Onboarding flow with API key guides
 - ✅ Infrastructure as Code (Terraform for AWS)
-- ✅ CI/CD pipeline (GitHub Actions)
+- ✅ CI/CD pipeline (GitHub Actions for dev/staging/prod)
+- ✅ Interactive installer script
 - ✅ Comprehensive documentation
 - ✅ Two marketing websites (open-source & SaaS)
+
+## 🚀 Quick Setup
+
+### Interactive Installer (Easiest Method)
+
+```bash
+# Run the interactive installer
+./install.sh
+
+# It will:
+# ✅ Check prerequisites (Node.js, PostgreSQL, etc.)
+# ✅ Prompt for all configuration (DB, AI keys, Stripe, etc.)
+# ✅ Create .env files
+# ✅ Install dependencies
+# ✅ Run database migrations
+# ✅ Seed initial data
+# ✅ Optionally set up GitHub secrets for CI/CD
+# ✅ Create start-dev.sh script
+
+# Then start development:
+./start-dev.sh
+```
+
+### CI/CD Pipeline
+
+The project includes complete CI/CD workflows for multiple environments:
+
+- **Development** (`develop` branch) → Deploys to dev.yourdomain.com
+- **Staging** (`staging` branch) → Deploys to staging.yourdomain.com
+- **Production** (`main` branch) → Deploys to yourdomain.com
+
+See `.claude/cicd-deployment.md` for complete CI/CD documentation.
 
 ## 🏗️ Architecture
 
