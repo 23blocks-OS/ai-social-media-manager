@@ -26,16 +26,20 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  socialAccounts SocialAccount[]
-  posts          Post[]
-  aiConfigs      AIConfig[]
-  refreshTokens  RefreshToken[]
-  brandProfiles  BrandProfile[]
-  subscriptions  Subscription[]
-  usageMetrics   UsageMetrics[]
-  contacts       Contact[]
-  emailCampaigns EmailCampaign[]
-  contactLists   ContactList[]
+  socialAccounts     SocialAccount[]
+  posts              Post[]
+  aiConfigs          AIConfig[]
+  refreshTokens      RefreshToken[]
+  brandProfiles      BrandProfile[]
+  subscriptions      Subscription[]
+  usageMetrics       UsageMetrics[]
+  contacts           Contact[]
+  emailCampaigns     EmailCampaign[]
+  contactLists       ContactList[]
+  whatsappTemplates  WhatsAppTemplate[]
+  whatsappCampaigns  WhatsAppCampaign[]
+  whatsappMessages   WhatsAppMessage[]
+  whatsappConfig     WhatsAppConfig?
 
   @@map("users")
 }
@@ -455,6 +459,23 @@ enum AIModelType {
   ANTHROPIC
 }
 
+enum CampaignChannel {
+  EMAIL
+  WHATSAPP
+  SMS
+}
+
+enum WhatsAppMessageStatus {
+  PENDING
+  QUEUED
+  SENDING
+  SENT
+  DELIVERED
+  READ
+  FAILED
+  REJECTED
+}
+
 model Contact {
   id              String        @id @default(cuid())
   userId          String
@@ -466,6 +487,9 @@ model Contact {
   jobTitle        String?
   location        String?
   phone           String?
+  phoneCountryCode String?      // E.164 format country code (e.g., "+1")
+  whatsappOptIn   Boolean       @default(false)
+  whatsappOptInDate DateTime?
   website         String?
   source          ContactSource @default(MANUAL)
   sourceId        String?       // ID from the source platform
@@ -483,10 +507,12 @@ model Contact {
   interactions       ContactInteraction[]
   campaignContacts   CampaignContact[]
   contactListMembers ContactListMember[]
+  whatsappMessages   WhatsAppMessage[]
 
   @@unique([userId, email])
   @@index([userId])
   @@index([email])
+  @@index([phone])
   @@index([source])
   @@map("contacts")
 }
@@ -656,4 +682,123 @@ model ContactListMember {
   @@index([listId])
   @@index([contactId])
   @@map("contact_list_members")
+}
+
+// WhatsApp Campaign Models
+
+model WhatsAppTemplate {
+  id                String   @id @default(cuid())
+  userId            String
+  name              String   // Template name in WhatsApp
+  language          String   @default("en")
+  category          String   // MARKETING, UTILITY, AUTHENTICATION
+  status            String   @default("PENDING") // PENDING, APPROVED, REJECTED
+  templateContent   String   @db.Text
+  headerType        String?  // TEXT, IMAGE, VIDEO, DOCUMENT
+  headerContent     String?  @db.Text
+  bodyText          String   @db.Text
+  footerText        String?
+  buttons           Json?    // Button configuration
+  variables         Json?    // Template variables/placeholders
+  whatsappId        String?  // WhatsApp template ID after approval
+  rejectionReason   String?  @db.Text
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  user     User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  campaigns WhatsAppCampaign[]
+
+  @@unique([userId, name, language])
+  @@index([userId])
+  @@index([status])
+  @@map("whatsapp_templates")
+}
+
+model WhatsAppCampaign {
+  id                String         @id @default(cuid())
+  userId            String
+  name              String
+  description       String?        @db.Text
+  templateId        String
+  targetTags        String[]
+  personalizationInstructions String? @db.Text
+  aiModelType       AIModelType    @default(LOCAL_LLM)
+  aiModelName       String         @default("llama3")
+  status            CampaignStatus @default(DRAFT)
+
+  // Statistics
+  totalContacts      Int @default(0)
+  messagesSent       Int @default(0)
+  messagesDelivered  Int @default(0)
+  messagesRead       Int @default(0)
+  messagesFailed     Int @default(0)
+
+  scheduledAt DateTime?
+  startedAt   DateTime?
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  template  WhatsAppTemplate @relation(fields: [templateId], references: [id])
+  messages  WhatsAppMessage[]
+
+  @@index([userId])
+  @@index([status])
+  @@map("whatsapp_campaigns")
+}
+
+model WhatsAppMessage {
+  id                  String                @id @default(cuid())
+  campaignId          String?
+  contactId           String
+  userId              String
+  phoneNumber         String
+  messageContent      String                @db.Text
+  mediaUrl            String?
+  templateName        String?
+  templateVariables   Json?
+  status              WhatsAppMessageStatus @default(PENDING)
+  whatsappMessageId   String?               // ID from WhatsApp
+  errorCode           String?
+  errorMessage        String?               @db.Text
+  sentAt              DateTime?
+  deliveredAt         DateTime?
+  readAt              DateTime?
+  failedAt            DateTime?
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @updatedAt
+
+  user     User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  contact  Contact              @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  campaign WhatsAppCampaign?    @relation(fields: [campaignId], references: [id], onDelete: SetNull)
+
+  @@index([campaignId])
+  @@index([contactId])
+  @@index([userId])
+  @@index([status])
+  @@index([whatsappMessageId])
+  @@map("whatsapp_messages")
+}
+
+model WhatsAppConfig {
+  id                    String   @id @default(cuid())
+  userId                String   @unique
+  provider              String   // META_CLOUD_API, TWILIO, MESSAGEBIRD
+  phoneNumberId         String?  // For Meta Cloud API
+  businessAccountId     String?  // For Meta Cloud API
+  accessToken           String?  @db.Text
+  twilioAccountSid      String?
+  twilioAuthToken       String?  @db.Text
+  twilioPhoneNumber     String?
+  webhookVerifyToken    String?
+  isActive              Boolean  @default(false)
+  lastVerifiedAt        DateTime?
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("whatsapp_configs")
 }

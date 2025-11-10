@@ -10,6 +10,7 @@ import subscriptionRoutes from './subscriptions';
 import webhookRoutes from './webhooks';
 import contactRoutes from './contacts.routes';
 import campaignRoutes from './campaigns.routes';
+import whatsappRoutes from './whatsapp.routes';
 
 const router = Router();
 
@@ -26,5 +27,6 @@ router.use('/brand-profiles', brandProfileRoutes);
 router.use('/subscriptions', subscriptionRoutes);
 router.use('/contacts', contactRoutes);
 router.use('/campaigns', campaignRoutes);
+router.use('/whatsapp', whatsappRoutes);
 
 export default router;

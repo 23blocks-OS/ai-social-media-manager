@@ -223,12 +223,42 @@ if [ "$DEPLOYMENT_MODE" = "3" ]; then
 fi
 
 # Email Configuration
-print_info "Email Configuration (for notifications)"
+print_info "Email Configuration (for notifications and campaigns)"
 prompt_input "SMTP Host (e.g., smtp.gmail.com)" "smtp.gmail.com" SMTP_HOST
 prompt_input "SMTP Port" "587" SMTP_PORT
 prompt_input "SMTP User" "" SMTP_USER
 prompt_input "SMTP Password" "" SMTP_PASS true
 prompt_input "From Email Address" "noreply@yourdomain.com" SMTP_FROM
+
+echo ""
+
+# WhatsApp Configuration (Optional)
+print_info "WhatsApp Marketing Configuration (Optional)"
+echo "WhatsApp campaigns require WhatsApp Business API setup"
+echo "Choose: META_CLOUD_API (recommended) or TWILIO"
+echo "Leave empty to skip WhatsApp features"
+echo ""
+
+prompt_input "WhatsApp Provider (META_CLOUD_API/TWILIO or leave empty)" "" WHATSAPP_PROVIDER
+
+if [ -n "$WHATSAPP_PROVIDER" ]; then
+    if [ "$WHATSAPP_PROVIDER" = "META_CLOUD_API" ]; then
+        print_info "Meta Cloud API Configuration"
+        prompt_input "WhatsApp Phone Number ID" "" WHATSAPP_PHONE_NUMBER_ID
+        prompt_input "WhatsApp Business Account ID" "" WHATSAPP_BUSINESS_ACCOUNT_ID
+        prompt_input "WhatsApp Access Token" "" WHATSAPP_ACCESS_TOKEN true
+        prompt_input "WhatsApp Webhook Verify Token" "$(openssl rand -hex 16 2>/dev/null || echo 'your-verify-token')" WHATSAPP_WEBHOOK_VERIFY_TOKEN
+        WHATSAPP_API_VERSION="v18.0"
+    elif [ "$WHATSAPP_PROVIDER" = "TWILIO" ]; then
+        print_info "Twilio WhatsApp Configuration"
+        prompt_input "Twilio Account SID" "" TWILIO_ACCOUNT_SID
+        prompt_input "Twilio Auth Token" "" TWILIO_AUTH_TOKEN true
+        prompt_input "Twilio WhatsApp Number (e.g., +14155238886)" "" TWILIO_WHATSAPP_NUMBER
+    else
+        print_warning "Invalid provider. Skipping WhatsApp configuration."
+        WHATSAPP_PROVIDER=""
+    fi
+fi
 
 echo ""
 
@@ -298,6 +328,16 @@ SMTP_SECURE=false
 SMTP_USER=${SMTP_USER}
 SMTP_PASS=${SMTP_PASS}
 SMTP_FROM=${SMTP_FROM}
+
+# WhatsApp (Optional - for marketing campaigns)
+WHATSAPP_PHONE_NUMBER_ID=${WHATSAPP_PHONE_NUMBER_ID}
+WHATSAPP_BUSINESS_ACCOUNT_ID=${WHATSAPP_BUSINESS_ACCOUNT_ID}
+WHATSAPP_ACCESS_TOKEN=${WHATSAPP_ACCESS_TOKEN}
+WHATSAPP_API_VERSION=${WHATSAPP_API_VERSION}
+WHATSAPP_WEBHOOK_VERIFY_TOKEN=${WHATSAPP_WEBHOOK_VERIFY_TOKEN}
+TWILIO_ACCOUNT_SID=${TWILIO_ACCOUNT_SID}
+TWILIO_AUTH_TOKEN=${TWILIO_AUTH_TOKEN}
+TWILIO_WHATSAPP_NUMBER=${TWILIO_WHATSAPP_NUMBER}
 
 # Frontend URL
 FRONTEND_URL=${FRONTEND_URL}
