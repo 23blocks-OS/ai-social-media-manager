@@ -33,6 +33,9 @@ model User {
   brandProfiles  BrandProfile[]
   subscriptions  Subscription[]
   usageMetrics   UsageMetrics[]
+  contacts       Contact[]
+  emailCampaigns EmailCampaign[]
+  contactLists   ContactList[]
 
   @@map("users")
 }
@@ -407,4 +410,250 @@ model UsageMetrics {
   @@unique([userId, month])
   @@index([userId])
   @@map("usage_metrics")
+}
+
+// Email Campaign Models
+
+enum ContactSource {
+  SOCIAL_MEDIA
+  CSV_IMPORT
+  MANUAL
+  API
+  INTEGRATION
+}
+
+enum CampaignStatus {
+  DRAFT
+  GENERATING
+  READY
+  SCHEDULED
+  SENDING
+  COMPLETED
+  PAUSED
+  CANCELLED
+}
+
+enum EmailStatus {
+  PENDING
+  GENERATING
+  GENERATED
+  QUEUED
+  SENDING
+  SENT
+  DELIVERED
+  OPENED
+  CLICKED
+  BOUNCED
+  FAILED
+  UNSUBSCRIBED
+  SPAM
+}
+
+enum AIModelType {
+  LOCAL_LLM
+  OPENAI
+  ANTHROPIC
+}
+
+model Contact {
+  id              String        @id @default(cuid())
+  userId          String
+  email           String
+  firstName       String?
+  lastName        String?
+  fullName        String?
+  company         String?
+  jobTitle        String?
+  location        String?
+  phone           String?
+  website         String?
+  source          ContactSource @default(MANUAL)
+  sourceId        String?       // ID from the source platform
+  profileData     Json?         // Social media profiles, bio, etc.
+  customFields    Json?         // User-defined custom fields
+  isSubscribed    Boolean       @default(true)
+  isVerified      Boolean       @default(false)
+  unsubscribedAt  DateTime?
+  lastContactedAt DateTime?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  user               User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tags               ContactTag[]
+  interactions       ContactInteraction[]
+  campaignContacts   CampaignContact[]
+  contactListMembers ContactListMember[]
+
+  @@unique([userId, email])
+  @@index([userId])
+  @@index([email])
+  @@index([source])
+  @@map("contacts")
+}
+
+model ContactTag {
+  id        String   @id @default(cuid())
+  contactId String
+  tag       String
+  createdAt DateTime @default(now())
+
+  contact Contact @relation(fields: [contactId], references: [id], onDelete: Cascade)
+
+  @@unique([contactId, tag])
+  @@index([contactId])
+  @@index([tag])
+  @@map("contact_tags")
+}
+
+model ContactInteraction {
+  id              String   @id @default(cuid())
+  contactId       String
+  interactionType String   // "email_sent", "email_opened", "social_media_interaction", etc.
+  platform        String?  // Twitter, LinkedIn, etc.
+  interactionData Json?
+  summary         String?  @db.Text
+  occurredAt      DateTime @default(now())
+  createdAt       DateTime @default(now())
+
+  contact Contact @relation(fields: [contactId], references: [id], onDelete: Cascade)
+
+  @@index([contactId])
+  @@index([platform])
+  @@map("contact_interactions")
+}
+
+model EmailCampaign {
+  id                        String         @id @default(cuid())
+  userId                    String
+  name                      String
+  description               String?        @db.Text
+  subjectTemplate           String
+  campaignGoal              String?        @db.Text
+  targetTags                String[]
+  aiModelType               AIModelType    @default(LOCAL_LLM)
+  aiModelName               String         @default("llama3")
+  personalizationInstructions String?      @db.Text
+  personalizationLevel      String         @default("MEDIUM") // LOW, MEDIUM, HIGH
+  includeSocialContext      Boolean        @default(true)
+  includeInteractionHistory Boolean        @default(true)
+  status                    CampaignStatus @default(DRAFT)
+
+  // Statistics
+  totalContacts    Int @default(0)
+  emailsGenerated  Int @default(0)
+  emailsSent       Int @default(0)
+  emailsDelivered  Int @default(0)
+  emailsOpened     Int @default(0)
+  emailsClicked    Int @default(0)
+  emailsBounced    Int @default(0)
+  emailsFailed     Int @default(0)
+
+  scheduledAt DateTime?
+  startedAt   DateTime?
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  templates        EmailTemplate[]
+  campaignContacts CampaignContact[]
+
+  @@index([userId])
+  @@index([status])
+  @@map("email_campaigns")
+}
+
+model EmailTemplate {
+  id           String   @id @default(cuid())
+  campaignId   String
+  templateName String
+  baseTemplate String   @db.Text
+  placeholders Json?    // Available placeholders
+  htmlTemplate String?  @db.Text
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  campaign EmailCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  @@index([campaignId])
+  @@map("email_templates")
+}
+
+model CampaignContact {
+  id                   String      @id @default(cuid())
+  campaignId           String
+  contactId            String
+  personalizedSubject  String?
+  personalizedContent  String?     @db.Text
+  htmlContent          String?     @db.Text
+  status               EmailStatus @default(PENDING)
+  aiGenerationTimeMs   Int?
+  sendAttempts         Int         @default(0)
+  errorMessage         String?     @db.Text
+  sentAt               DateTime?
+  deliveredAt          DateTime?
+  openedAt             DateTime?
+  clickedAt            DateTime?
+  bouncedAt            DateTime?
+  unsubscribedAt       DateTime?
+  createdAt            DateTime    @default(now())
+  updatedAt            DateTime    @updatedAt
+
+  campaign      EmailCampaign  @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  contact       Contact        @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  trackingEvents EmailTracking[]
+
+  @@unique([campaignId, contactId])
+  @@index([campaignId])
+  @@index([contactId])
+  @@index([status])
+  @@map("campaign_contacts")
+}
+
+model EmailTracking {
+  id                String   @id @default(cuid())
+  campaignContactId String
+  eventType         String   // "opened", "clicked", "bounced", etc.
+  eventData         Json?
+  ipAddress         String?
+  userAgent         String?
+  occurredAt        DateTime @default(now())
+
+  campaignContact CampaignContact @relation(fields: [campaignContactId], references: [id], onDelete: Cascade)
+
+  @@index([campaignContactId])
+  @@index([eventType])
+  @@map("email_tracking")
+}
+
+model ContactList {
+  id             String   @id @default(cuid())
+  userId         String
+  name           String
+  description    String?  @db.Text
+  isDynamic      Boolean  @default(false)
+  filterCriteria Json?    // For dynamic lists
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  user    User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  members ContactListMember[]
+
+  @@index([userId])
+  @@map("contact_lists")
+}
+
+model ContactListMember {
+  id        String   @id @default(cuid())
+  listId    String
+  contactId String
+  addedAt   DateTime @default(now())
+
+  list    ContactList @relation(fields: [listId], references: [id], onDelete: Cascade)
+  contact Contact     @relation(fields: [contactId], references: [id], onDelete: Cascade)
+
+  @@unique([listId, contactId])
+  @@index([listId])
+  @@index([contactId])
+  @@map("contact_list_members")
 }

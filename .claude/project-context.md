@@ -16,6 +16,12 @@ All major features are implemented:
 - ✅ Brand identity management system
 - ✅ Post scheduling and calendar
 - ✅ Analytics dashboard with charts
+- ✅ **AI-Powered Email Campaigns** (NEW!)
+  - Contact management with multiple import sources
+  - Local LLM (Ollama) for cost-effective personalization
+  - Social media contact import
+  - CSV import/export
+  - Campaign analytics and tracking
 - ✅ Complete subscription/billing system with Stripe
 - ✅ User authentication and authorization
 - ✅ Email notification service

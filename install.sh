@@ -160,12 +160,54 @@ echo ""
 
 # AI Services
 print_info "AI Services Configuration"
-echo "You'll need at least one AI service (OpenAI or Anthropic)"
-prompt_input "OpenAI API Key (sk-...)" "" OPENAI_API_KEY
-prompt_input "Anthropic API Key (sk-ant-...)" "" ANTHROPIC_API_KEY
+echo "You can use cloud AI services (OpenAI/Anthropic) OR local LLM (Ollama)"
+echo ""
 
-if [ -z "$OPENAI_API_KEY" ] && [ -z "$ANTHROPIC_API_KEY" ]; then
-    print_warning "No AI API keys provided. AI features will not work."
+# Check if Ollama is installed
+OLLAMA_INSTALLED=0
+if command_exists ollama; then
+    print_success "Ollama is installed"
+    OLLAMA_INSTALLED=1
+
+    # Check if Ollama is running
+    if curl -s http://localhost:11434/api/tags > /dev/null 2>&1; then
+        print_success "Ollama is running"
+
+        # Check for available models
+        OLLAMA_MODELS=$(curl -s http://localhost:11434/api/tags | grep -o '"name":"[^"]*"' | cut -d'"' -f4 || echo "")
+        if [ -n "$OLLAMA_MODELS" ]; then
+            print_success "Available Ollama models: $(echo $OLLAMA_MODELS | tr '\n' ', ' | sed 's/,$//')"
+        else
+            print_warning "No Ollama models found. You may want to pull a model: ollama pull llama3"
+        fi
+    else
+        print_warning "Ollama is installed but not running. Start it with: ollama serve"
+    fi
+else
+    print_info "Ollama not found. For cost-effective email campaigns, consider installing Ollama."
+    echo "  Installation: curl -fsSL https://ollama.ai/install.sh | sh"
+    echo "  Then pull a model: ollama pull llama3"
+fi
+
+echo ""
+prompt_input "OpenAI API Key (sk-...) [optional if using Ollama]" "" OPENAI_API_KEY
+prompt_input "Anthropic API Key (sk-ant-...) [optional if using Ollama]" "" ANTHROPIC_API_KEY
+
+# Set Ollama configuration
+if [ $OLLAMA_INSTALLED -eq 1 ]; then
+    prompt_input "Ollama Base URL" "http://localhost:11434" OLLAMA_BASE_URL
+    OLLAMA_TIMEOUT="60000"
+else
+    OLLAMA_BASE_URL="http://localhost:11434"
+    OLLAMA_TIMEOUT="60000"
+fi
+
+if [ -z "$OPENAI_API_KEY" ] && [ -z "$ANTHROPIC_API_KEY" ] && [ $OLLAMA_INSTALLED -eq 0 ]; then
+    print_warning "No AI services configured. Install Ollama or provide API keys for AI features."
+    echo "For email campaigns with local LLM:"
+    echo "  1. Install Ollama: curl -fsSL https://ollama.ai/install.sh | sh"
+    echo "  2. Start Ollama: ollama serve"
+    echo "  3. Pull a model: ollama pull llama3"
 fi
 
 echo ""
@@ -238,6 +280,10 @@ JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET}
 # AI Services
 OPENAI_API_KEY=${OPENAI_API_KEY}
 ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+
+# Ollama (Local LLM for email campaigns)
+OLLAMA_BASE_URL=${OLLAMA_BASE_URL}
+OLLAMA_TIMEOUT=${OLLAMA_TIMEOUT}
 
 # Stripe (for SaaS)
 STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}

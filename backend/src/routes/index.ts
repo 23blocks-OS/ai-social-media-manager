@@ -8,6 +8,8 @@ import analyticsRoutes from './analytics';
 import brandProfileRoutes from './brandProfiles';
 import subscriptionRoutes from './subscriptions';
 import webhookRoutes from './webhooks';
+import contactRoutes from './contacts.routes';
+import campaignRoutes from './campaigns.routes';
 
 const router = Router();
 
@@ -22,5 +24,7 @@ router.use('/ai', aiRoutes);
 router.use('/analytics', analyticsRoutes);
 router.use('/brand-profiles', brandProfileRoutes);
 router.use('/subscriptions', subscriptionRoutes);
+router.use('/contacts', contactRoutes);
+router.use('/campaigns', campaignRoutes);
 
 export default router;
